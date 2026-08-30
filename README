@@ -2,7 +2,7 @@
 
 A full-stack Java system that auto-generates exam seating plans, ensures no two students from the same class sit adjacent, assigns invigilators, and lets students find their seat in real time.
 
-🚀 Live Demo • Backend Code • Frontend Code
+🚀 [Live Demo](https://exam-seating-frontend-y9w4pbjoc-self27.vercel.app/) • [Backend Code](https://github.com/aaruhyareddy66/exam-seating-backend) • [Frontend Code](https://github.com/aaruhyareddy66/exam-seating-frontend)
 
 ## 🌟 What is ExamFlow?
 
