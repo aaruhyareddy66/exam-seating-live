@@ -1,0 +1,120 @@
+# ExamFlow — Conflict-Free Exam Seating & Invigilation System
+
+A full-stack Java system that auto-generates exam seating plans, ensures no two students from the same class sit adjacent, assigns invigilators, and lets students find their seat in real time.
+
+🚀 Live Demo • Backend Code • Frontend Code
+
+## 🌟 What is ExamFlow?
+
+ExamFlow is a full-stack system I built to replace the manual, spreadsheet-driven way colleges handle exam seating. Instead of a staff member manually checking that no two students from the same class sit together, the system does it automatically using a constraint-satisfaction algorithm — and goes further by handling invigilator assignment, live absentee tracking, and instant seat lookup for students.
+
+It doesn't just place students in seats. It explains why seating fails when it can't fit everyone, broadcasts live updates the moment something changes, and gives students a self-serve way to find their seat without asking staff.
+
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| 🪑 Auto Seating | Generates a full seating plan enforcing "no same class adjacent" |
+| 🧑‍🏫 Invigilator Assignment | Round-robin assigns invigilators across all halls |
+| 🔍 Student Seat Lookup | Enter roll number → get hall, row, column + QR code |
+| 🔔 Live Absentee Alerts | Mark a student absent → seat frees instantly, live WebSocket alert to all admins |
+| 📋 Conflict Explanation | If seating fails, explains exactly why (class, count, capacity) |
+| 🔐 Admin Access Control | Password-gated admin panel, public student lookup |
+
+## 🧠 Tech Stack
+
+┌─────────────────────────────────────────────────────┐
+│                  React Frontend                      │
+│         (React Router + STOMP.js + QR codes)          │
+│              Deployed on Vercel                       │
+└──────────────────────┬────────────────────────────────┘
+                        │ REST API + WebSocket
+┌──────────────────────▼────────────────────────────────┐
+│               Spring Boot Backend                     │
+│              Deployed on Render (Docker)               │
+└────────┬─────────────────────┬─────────────────────────┘
+         │                     │
+┌────────▼──────────┐  ┌───────▼─────────────────────────┐
+│  Seating Engine     │  │      Live Messaging Layer       │
+│  Strategy Pattern    │  │   WebSocket / STOMP broadcast   │
+│  Backtracking Algo   │  │   Real-time absentee alerts     │
+└─────────────────────┘  └──────────────────────────────────┘
+         │
+┌────────▼──────────────┐
+│   PostgreSQL (Render)  │
+│   Spring Data JPA      │
+└────────────────────────┘
+
+## 🏗️ Architecture
+
+**Seating Engine**
+- SeatingConstraint interface with NoSameClassAdjacentConstraint as the current rule
+- New rules can be added as standalone classes with zero changes to the core algorithm — pure Strategy pattern, Open/Closed Principle in practice
+- Backtracking allocator builds an empty seat grid per hall, then places students one at a time, checking every active constraint before committing
+
+**Invigilator Assignment**
+- Round-robin distribution across halls, cycling back through the invigilator list if halls outnumber staff
+
+**Real-time Layer**
+- Spring WebSocket + STOMP broadcasts on /topic/alerts
+- Marking a student absent frees the seat in the database and pushes a live update to every connected client instantly — no polling
+
+**API Layer**
+- Spring Boot REST controllers: /api/admin/* for setup, /api/seating/* for generation, lookup, and assignment
+- Global exception handler returns clean, readable error messages instead of generic server errors
+
+## 🚀 Run Locally
+
+**Prerequisites**
+- Java 21+
+- Node.js 18+
+- MySQL or PostgreSQL
+
+**Backend**
+cd backend
+./mvnw spring-boot:run
+Runs on http://localhost:8080
+
+**Frontend**
+cd frontend
+npm install
+npm run dev
+Open http://localhost:5173 🎉
+
+Admin password: ADMIN
+
+## 📁 Project Structure
+
+exam-seating/
+├── backend/
+│   ├── model/              Student, Hall, Seat, Invigilator, AlertMessage
+│   ├── repository/         Spring Data JPA repositories
+│   ├── service/
+│   │   ├── constraint/     SeatingConstraint + implementations
+│   │   ├── SeatingService.java
+│   │   └── InvigilatorService.java
+│   ├── controller/         AdminController, SeatingController
+│   └── config/             WebSocketConfig, CorsConfig
+│
+└── frontend/
+    ├── src/
+    │   ├── pages/          Home, AdminGate, AdminPage, StudentLookupPage
+    │   ├── api.js
+    │   └── ws.js
+    ├── index.html
+    └── package.json
+
+## 🎤 Key Learnings
+
+- Implemented a real constraint-satisfaction algorithm (backtracking) instead of basic CRUD logic
+- Applied the Strategy design pattern to keep seating rules pluggable and testable independently
+- Built and debugged a full WebSocket/STOMP real-time messaging layer from scratch
+- Migrated from local MySQL to a cloud PostgreSQL instance for deployment without touching business logic — thanks to JPA's database-agnostic design
+- Deployed a full-stack Java + React app end-to-end using Docker on Render and Vercel, with GitHub as the CI trigger
+
+## 📬 Contact
+
+**Aaruhya Reddy**
+
+GitHub: @aaruhyareddy66
+Live Project: exam-seating-frontend-y9w4pbjoc-self27.vercel.app
